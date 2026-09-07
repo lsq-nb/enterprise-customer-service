@@ -6,9 +6,6 @@ import logging
 from typing import Any
 
 from langchain_core.documents import Document
-from langchain_openai import OpenAIModelName
-from langchain_openai import OpenAIEmbeddings
-from langchain_community.cross_encoders import CrossEncoder
 from sentence_transformers import CrossEncoder as SentenceCrossEncoder
 
 from config.settings import settings

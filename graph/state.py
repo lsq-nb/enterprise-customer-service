@@ -8,7 +8,7 @@ import logging
 from typing import Annotated, Any
 
 from langgraph.graph import add_messages
-from langgraph.graph.message import AIMessage, HumanMessage
+from langchain_core.messages import AIMessage, HumanMessage
 
 logger = logging.getLogger(__name__)
 

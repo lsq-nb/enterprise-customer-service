@@ -3,7 +3,6 @@
 测试业务工具功能
 """
 import pytest
-from unittest.mock import MagicMock, patch
 
 
 class TestOrderQueryTool:
@@ -14,7 +13,7 @@ class TestOrderQueryTool:
         from tools.business_tools import OrderQueryTool
 
         tool = OrderQueryTool()
-        result = tool.query_order.invoke({"order_id": "ORD20241201001"})
+        result = tool.execute(order_id="ORD20241201001")
         assert "ORD20241201001" in result
         assert "已签收" in result
 
@@ -23,7 +22,7 @@ class TestOrderQueryTool:
         from tools.business_tools import OrderQueryTool
 
         tool = OrderQueryTool()
-        result = tool.query_order.invoke({"order_id": "NOT_EXIST"})
+        result = tool.execute(order_id="NOT_EXIST")
         assert "未找到" in result or "NOT_EXIST" in result
 
 
@@ -35,7 +34,7 @@ class TestReturnExchangeTool:
         from tools.business_tools import ReturnExchangeTool
 
         tool = ReturnExchangeTool()
-        result = tool.query_return_policy.invoke({"action_type": "return"})
+        result = tool.execute(action_type="return")
         assert "七天" in result or "退货" in result
 
     def test_warranty_policy(self):
@@ -43,7 +42,7 @@ class TestReturnExchangeTool:
         from tools.business_tools import ReturnExchangeTool
 
         tool = ReturnExchangeTool()
-        result = tool.query_return_policy.invoke({"action_type": "warranty"})
+        result = tool.execute(action_type="warranty")
         assert "保修" in result
 
 
@@ -55,7 +54,7 @@ class TestProductRecommendTool:
         from tools.business_tools import ProductRecommendTool
 
         tool = ProductRecommendTool()
-        result = tool.recommend_product.invoke({"budget": 5000, "usage": "日常使用"})
+        result = tool.execute(budget=5000, usage="日常使用")
         assert "推荐" in result or "产品" in result
 
     def test_recommend_no_budget(self):
@@ -63,7 +62,7 @@ class TestProductRecommendTool:
         from tools.business_tools import ProductRecommendTool
 
         tool = ProductRecommendTool()
-        result = tool.recommend_product.invoke({"budget": 0, "usage": "商务办公"})
+        result = tool.execute(budget=0, usage="商务办公")
         assert "推荐" in result or "产品" in result
 
 
@@ -75,11 +74,11 @@ class TestComplaintRecordTool:
         from tools.business_tools import ComplaintRecordTool
 
         tool = ComplaintRecordTool()
-        result = tool.submit_complaint.invoke({
-            "category": "物流问题",
-            "content": "快递配送时间过长",
-            "order_id": "ORD123",
-        })
+        result = tool.execute(
+            category="物流问题",
+            content="快递配送时间过长",
+            order_id="ORD123",
+        )
         assert "投诉受理成功" in result
         assert "CMP" in result
 
@@ -92,10 +91,10 @@ class TestAppointmentTool:
         from tools.business_tools import AppointmentTool
 
         tool = AppointmentTool()
-        result = tool.make_appointment.invoke({
-            "service_type": "维修服务",
-            "preferred_time": "2024-12-15 14:00",
-            "city": "北京",
-        })
+        result = tool.execute(
+            service_type="维修服务",
+            preferred_time="2024-12-15 14:00",
+            city="北京",
+        )
         assert "预约成功" in result
         assert "APT" in result

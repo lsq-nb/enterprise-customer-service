@@ -317,6 +317,37 @@ def _intent_to_kb_type(intent: str) -> str | None:
     return mapping.get(intent)
 
 
-# 编译工作流
-workflow = build_workflow()
-compiled_graph = workflow.compile()
+# 编译工作流（延迟加载，避免缺少 API Key 时报错）
+_workflow_instance: Any = None
+_compiled_instance: Any = None
+
+
+def get_compiled_graph():
+    """获取编译后的工作流实例（懒加载）"""
+    global _workflow_instance, _compiled_instance
+    if _compiled_instance is None:
+        from config.settings import get_settings
+        get_settings()  # 触发配置验证
+        _workflow_instance = build_workflow()
+        _compiled_instance = _workflow_instance.compile()
+    return _compiled_instance
+
+
+# 向后兼容：直接访问 compiled_graph 时触发懒加载
+class _CompiledGraphProxy:
+    """代理对象，在首次使用时才编译工作流"""
+
+    def __getattr__(self, name: str):
+        return getattr(get_compiled_graph(), name)
+
+    def __repr__(self):
+        return repr(get_compiled_graph())
+
+    def invoke(self, *args, **kwargs):
+        return get_compiled_graph().invoke(*args, **kwargs)
+
+    def stream(self, *args, **kwargs):
+        return get_compiled_graph().stream(*args, **kwargs)
+
+
+compiled_graph = _CompiledGraphProxy()

@@ -1,12 +1,12 @@
 """
 业务工具实现
 包含订单查询、退换货、产品推荐、投诉记录、预约等服务工具
+
+注意：使用类方法直接实现，避免 @tool 装饰器在实例方法上的兼容性问题
 """
 import logging
 from datetime import datetime
 from typing import Any
-
-from langchain_core.tools import tool
 
 from tools.base_tool import BaseTool
 
@@ -73,18 +73,10 @@ class OrderQueryTool(BaseTool):
     """订单查询工具"""
 
     name = "query_order"
-    description = """查询订单信息，包括订单状态、物流详情等。
-    适用场景：用户询问订单状态、物流进度、发货时间等。
-    """
+    description = "查询订单信息，包括订单状态、物流详情等。适用场景：用户询问订单状态、物流进度、发货时间等。"
 
-    @tool
-    def query_order(self, order_id: str) -> str:
-        """
-        查询指定订单的详细信息
-
-        Args:
-            order_id: 订单编号，如 ORD20241201001
-        """
+    def execute(self, order_id: str) -> str:
+        """查询指定订单的详细信息"""
         logger.info(f"订单查询工具被调用，订单号: {order_id}")
         order = MOCK_ORDERS.get(order_id)
         if not order:
@@ -94,7 +86,7 @@ class OrderQueryTool(BaseTool):
     def _format_order_info(self, order: dict[str, Any]) -> str:
         """格式化订单信息为可读文本"""
         lines = [
-            f"【订单信息】",
+            "【订单信息】",
             f"订单编号: {order['order_id']}",
             f"商品: {order['product']}",
             f"金额: ¥{order['amount']:,}",
@@ -107,27 +99,15 @@ class OrderQueryTool(BaseTool):
             lines.append(f"{log['time']} - {log['desc']}")
         return "\n".join(lines)
 
-    def execute(self, **kwargs: Any) -> Any:
-        order_id = kwargs.get("order_id", "")
-        return self.query_order.invoke({"order_id": order_id})
-
 
 class ReturnExchangeTool(BaseTool):
     """退换货政策查询工具"""
 
     name = "query_return_policy"
-    description = """查询退换货政策和流程。
-    适用场景：用户询问如何退货、换货、保修等售后问题。
-    """
+    description = "查询退换货政策和流程。适用场景：用户询问如何退货、换货、保修等售后问题。"
 
-    @tool
-    def query_return_policy(self, action_type: str = "return") -> str:
-        """
-        查询退换货政策
-
-        Args:
-            action_type: 操作类型，可选值：return（退货）、exchange（换货）、warranty（保修）
-        """
+    def execute(self, action_type: str = "return") -> str:
+        """查询退换货政策"""
         logger.info(f"退换货查询工具被调用，类型: {action_type}")
         policies = {
             "return": """【七天无理由退货政策】
@@ -174,28 +154,15 @@ class ReturnExchangeTool(BaseTool):
         }
         return policies.get(action_type, "不支持的操作类型，请使用 return、exchange 或 warranty")
 
-    def execute(self, **kwargs: Any) -> Any:
-        action_type = kwargs.get("action_type", "return")
-        return self.query_return_policy.invoke({"action_type": action_type})
-
 
 class ProductRecommendTool(BaseTool):
     """产品推荐工具"""
 
     name = "recommend_product"
-    description = """根据用户需求推荐合适的产品。
-    适用场景：用户咨询产品选择、对比不同型号、预算范围内推荐等。
-    """
+    description = "根据用户需求推荐合适的产品。适用场景：用户咨询产品选择、对比不同型号、预算范围内推荐等。"
 
-    @tool
-    def recommend_product(self, budget: float = 0, usage: str = "日常使用") -> str:
-        """
-        根据预算和使用场景推荐产品
-
-        Args:
-            budget: 预算金额（元），0表示不限
-            usage: 主要使用场景，如"日常使用"、"商务办公"、"摄影创作"、"游戏娱乐"
-        """
+    def execute(self, budget: float = 0, usage: str = "日常使用") -> str:
+        """根据预算和使用场景推荐产品"""
         logger.info(f"产品推荐工具被调用，预算: {budget}, 场景: {usage}")
 
         products = [
@@ -230,9 +197,9 @@ class ProductRecommendTool(BaseTool):
             suitable = filtered
 
         # 格式化推荐结果
-        result_lines = [f"【根据您的需求和预算，为您推荐以下产品】", ""]
-        for i, p in enumerate(suitable[:2], 1):  # 最多推荐2款
-            result_lines.append(f"推荐{ i}: {p['name']}")
+        result_lines = ["【根据您的需求和预算，为您推荐以下产品】", ""]
+        for i, p in enumerate(suitable[:2], 1):
+            result_lines.append(f"推荐{i}: {p['name']}")
             result_lines.append(f"  价格: ¥{p['price']:,}")
             result_lines.append(f"  核心特点: {'、'.join(p['features'][:3])}")
             result_lines.append("")
@@ -240,40 +207,23 @@ class ProductRecommendTool(BaseTool):
         result_lines.append("如需了解更多详情，请告诉我具体型号！")
         return "\n".join(result_lines)
 
-    def execute(self, **kwargs: Any) -> Any:
-        budget = kwargs.get("budget", 0.0)
-        usage = kwargs.get("usage", "日常使用")
-        return self.recommend_product.invoke({"budget": budget, "usage": usage})
-
 
 class ComplaintRecordTool(BaseTool):
     """投诉记录工具"""
 
     name = "submit_complaint"
-    description = """提交投诉或建议。
-    适用场景：用户对服务或产品不满，需要正式投诉或反馈建议。
-    """
+    description = "提交投诉或建议。适用场景：用户对服务或产品不满，需要正式投诉或反馈建议。"
 
-    @tool
-    def submit_complaint(
+    def execute(
         self,
         category: str,
         content: str,
         order_id: str = "",
         contact_phone: str = "",
     ) -> str:
-        """
-        提交投诉
-
-        Args:
-            category: 投诉类别，可选值：物流问题、产品质量、服务态度、其他
-            content: 投诉内容描述
-            order_id: 关联订单号（可选）
-            contact_phone: 联系手机号（可选）
-        """
+        """提交投诉"""
         logger.info(f"投诉工具被调用，类别: {category}, 订单: {order_id}")
 
-        # 生成投诉编号
         complaint_id = f"CMP{datetime.now().strftime('%Y%m%d%H%M%S')}"
 
         result = f"""【投诉受理成功】
@@ -294,26 +244,14 @@ class ComplaintRecordTool(BaseTool):
         """
         return result
 
-    def execute(self, **kwargs: Any) -> Any:
-        category = kwargs.get("category", "其他")
-        content = kwargs.get("content", "")
-        order_id = kwargs.get("order_id", "")
-        contact_phone = kwargs.get("contact_phone", "")
-        return self.submit_complaint.invoke(
-            {"category": category, "content": content, "order_id": order_id, "contact_phone": contact_phone}
-        )
-
 
 class AppointmentTool(BaseTool):
     """预约工具"""
 
     name = "make_appointment"
-    description = """预约售后服务或线下门店 visit。
-    适用场景：用户需要预约维修、以旧换新、到店体验等服务。
-    """
+    description = "预约售后服务或线下门店 visit。适用场景：用户需要预约维修、以旧换新、到店体验等服务。"
 
-    @tool
-    def make_appointment(
+    def execute(
         self,
         service_type: str,
         preferred_time: str,
@@ -321,16 +259,7 @@ class AppointmentTool(BaseTool):
         phone: str = "",
         name: str = "",
     ) -> str:
-        """
-        预约服务
-
-        Args:
-            service_type: 服务类型，可选值：维修服务、以旧换新、到店体验、上门检测
-            preferred_time: 期望服务时间，格式如"2024-12-10 14:00"
-            city: 所在城市（可选）
-            phone: 联系电话（可选）
-            name: 预约人姓名（可选）
-        """
+        """预约服务"""
         logger.info(f"预约工具被调用，类型: {service_type}, 时间: {preferred_time}")
 
         appointment_id = f"APT{datetime.now().strftime('%Y%m%d%H%M%S')}"
@@ -352,13 +281,3 @@ class AppointmentTool(BaseTool):
         如有疑问，请拨打客服热线: 400-XXX-XXXX
         """
         return result
-
-    def execute(self, **kwargs: Any) -> Any:
-        service_type = kwargs.get("service_type", "维修服务")
-        preferred_time = kwargs.get("preferred_time", "")
-        city = kwargs.get("city", "")
-        phone = kwargs.get("phone", "")
-        name = kwargs.get("name", "")
-        return self.make_appointment.invoke(
-            {"service_type": service_type, "preferred_time": preferred_time, "city": city, "phone": phone, "name": name}
-        )

@@ -28,11 +28,11 @@ class HybridRetriever(BaseRetriever):
     """
 
     # ────────────────────────────────────────────
-    # 配置参数
+    # 配置参数（默认值，实际从 settings 读取）
     # ────────────────────────────────────────────
-    bm25_weight: float = settings.bm25_weight
+    bm25_weight: float = 0.4
     """BM25 检索结果的权重（0.0-1.0），向量检索权重为 1 - bm25_weight"""
-    top_k: int = settings.retrieval_top_k
+    top_k: int = 5
     """返回的文档总数"""
     bm25_top_k: int = 10
     """BM25 检索返回的候选文档数"""
@@ -52,22 +52,24 @@ class HybridRetriever(BaseRetriever):
     def __init__(
         self,
         documents: list[Document],
-        collection_name: str = settings.chroma_collection,
-        persist_dir: str = settings.chroma_persist_dir,
+        collection_name: str | None = None,
+        persist_dir: str | None = None,
         **kwargs: Any,
     ) -> None:
+        from config.settings import get_settings
+        s = get_settings()
         super().__init__(**kwargs)
         self.bm25_weight = kwargs.get("bm25_weight", self.bm25_weight)
         self.top_k = kwargs.get("top_k", self.top_k)
         self._embeddings = OpenAIEmbeddings(
-            model=settings.embedding_model,
-            openai_api_key=settings.openai_api_key,
-            base_url=settings.openai_base_url,
+            model=s.embedding_model,
+            openai_api_key=s.openai_api_key,
+            base_url=s.openai_base_url,
         )
         self._vector_store = Chroma(
-            collection_name=collection_name,
+            collection_name=collection_name or s.chroma_collection,
             embedding_function=self._embeddings,
-            persist_directory=persist_dir,
+            persist_directory=persist_dir or s.chroma_persist_dir,
         )
         # 初始化 BM25 检索器
         self._bm25_retriever = BM25Retriever.from_documents(

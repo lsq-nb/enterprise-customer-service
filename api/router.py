@@ -221,7 +221,7 @@ async def clear_knowledge(
 @app.get("/api/tools/list", response_model=ToolListResponse)
 async def list_tools() -> ToolListResponse:
     """获取所有可用工具列表"""
-    from tools.business_tools import TOOL_REGISTRY
+    from tools import TOOL_REGISTRY
     tools = [
         {
             "name": name,
