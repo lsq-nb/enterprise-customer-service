@@ -1,0 +1,107 @@
+# ============================================
+# 企业智能客服系统 - Docker Compose
+# ============================================
+version: '3.8'
+
+services:
+  # ──────────────────────────────────────────
+  # FastAPI 后端服务
+  # ──────────────────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ecs-api
+    restart: unless-stopped
+    ports:
+      - "${API_PORT:-8000}:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL:-https://api.openai.com/v1}
+      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4o}
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-text-embedding-3-small}
+      - CHROMA_PERSIST_DIR=/data/chroma_db
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+    volumes:
+      - chroma_data:/data/chroma_db
+      - ./logs:/app/logs
+    networks:
+      - ecs-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 512M
+
+  # ──────────────────────────────────────────
+  # Streamlit 前端服务
+  # ──────────────────────────────────────────
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ecs-frontend
+    restart: unless-stopped
+    ports:
+      - "${STREAMLIT_PORT:-8501}:8501"
+    environment:
+      - STREAMLIT_SERVER_PORT=8501
+      - STREAMLIT_SERVER_HEADLESS=true
+      - STREAMLIT_SERVER_ADDRESS=0.0.0.0
+      - API_URL=http://api:8000
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL:-https://api.openai.com/v1}
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - ecs-network
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 256M
+
+  # ──────────────────────────────────────────
+  # ChromaDB 向量数据库
+  # ──────────────────────────────────────────
+  chromadb:
+    image: chromadb/chroma:0.5.5
+    container_name: ecs-chromadb
+    restart: unless-stopped
+    ports:
+      - "${CHROMADB_PORT:-8002}:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+    networks:
+      - ecs-network
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 256M
+
+# ─────────────────────────────────────────────
+# 网络配置
+# ─────────────────────────────────────────────
+networks:
+  ecs-network:
+    driver: bridge
+
+# ─────────────────────────────────────────────
+# 数据卷
+# ─────────────────────────────────────────────
+volumes:
+  chroma_data:
+    driver: local

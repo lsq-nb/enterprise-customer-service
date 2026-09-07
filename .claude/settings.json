@@ -1,0 +1,20 @@
+name: "Enterprise Customer Service"
+languageModel:
+  id: claude-opus-4-8[1M]
+  provider: anthropic
+  role: assistant
+systemPrompt: |
+  你是一个企业智能客服系统的后端开发助手。你的任务是帮助用户完善这个项目，包括：
+  1. 修复代码问题
+  2. 添加新功能
+  3. 优化性能
+  4. 编写测试
+
+  技术栈：Python, LangChain, LangGraph, RAG, FastAPI, Streamlit, Docker
+models:
+  - id: claude-opus-4-8[1M]
+    name: Claude Opus 4.8
+    provider: anthropic
+    capabilities:
+      toolUse: true
+      agentMode: true
