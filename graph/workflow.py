@@ -5,6 +5,7 @@ LangGraph 主工作流图
 import logging
 from typing import Any
 
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langgraph.graph import StateGraph, END
 
 from graph.state import AgentState

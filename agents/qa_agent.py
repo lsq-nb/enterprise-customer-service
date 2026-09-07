@@ -94,6 +94,7 @@ class QA_agent:
         结合对话历史生成回答（多轮对话场景）
         """
         # 先澄清用户意图
+        history_text = self._format_history(conversation_history)
         clarify_prompt = CONTEXT_AUGMENT_PROMPT.format(
             history=history_text,
             current_input=question,
