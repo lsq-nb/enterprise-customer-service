@@ -1,8 +1,10 @@
+# ============================================
 # 企业智能客服系统 - Dockerfile
 # 多阶段构建，优化镜像大小
+# ============================================
 
 # ─────────────────────────────────────────────
-# 阶段 1: 构建阶段
+# 阶段 1: 构建阶段 - 安装依赖
 # ─────────────────────────────────────────────
 FROM python:3.11-slim AS builder
 
@@ -25,10 +27,9 @@ WORKDIR /build
 COPY requirements.txt .
 COPY requirements-dev.txt .
 
-# 安装 Python 依赖
-RUN pip install --upgrade pip && \
-    pip install -r requirements.txt && \
-    pip install -r requirements-dev.txt
+# 安装 Python 依赖到独立目录
+RUN pip install --target=/app/libs -r requirements.txt && \
+    pip install --target=/app/libs -r requirements-dev.txt
 
 # ─────────────────────────────────────────────
 # 阶段 2: 运行阶段
@@ -39,7 +40,8 @@ FROM python:3.11-slim AS runner
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     LANG=C.UTF-8 \
-    LC_ALL=C.UTF-8
+    LC_ALL=C.UTF-8 \
+    PYTHONPATH=/app/libs
 
 # 创建非 root 用户
 RUN groupadd -r appuser && useradd -r -g appuser -m appuser
@@ -47,12 +49,8 @@ RUN groupadd -r appuser && useradd -r -g appuser -m appuser
 # 设置工作目录
 WORKDIR /app
 
-# 从构建阶段复制 Python 包
-COPY --from=builder /local/lib/python3.11/site-packages /local/lib/python3.11/site-packages
-COPY --from=builder /local/bin /local/bin
-
-# 设置 PYTHONPATH
-ENV PYTHONPATH=/local/lib/python3.11/site-packages:${PYTHONPATH}
+# 复制 Python 包
+COPY --from=builder /app/libs /app/libs
 
 # 复制应用代码
 COPY --chown=appuser:appuser . .
@@ -71,5 +69,5 @@ EXPOSE 8000 8501
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')" || exit 1
 
-# 启动命令（通过 docker-compose 指定）
+# 默认启动命令（可通过 docker-compose 覆盖）
 CMD ["python", "-m", "main"]
