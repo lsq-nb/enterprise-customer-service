@@ -57,7 +57,7 @@
 
 ```bash
 # 1. 克隆项目
-git clone <your-repo-url>
+git clone https://github.com/lsq-nb/enterprise-customer-service.git
 cd enterprise_customer_service
 
 # 2. 安装依赖
