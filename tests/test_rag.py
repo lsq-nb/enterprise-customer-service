@@ -18,8 +18,6 @@ class TestHybridRetriever:
 
     def test_fuse_results(self, sample_documents):
         """测试结果融合"""
-        from rag.retriever import HybridRetriever
-
         bm25_docs = sample_documents[:2]
         vector_docs = sample_documents[1:]
 
@@ -35,12 +33,21 @@ class TestKnowledgeBase:
     def test_load_from_text(self, mock_knowledge_base):
         """测试从文本加载知识库"""
         kb = mock_knowledge_base
-        count = kb.load_from_text(
+        # 直接测试 KnowledgeBase 类的方法
+        from rag.knowledge_base import KnowledgeBase
+        kb_instance = KnowledgeBase.__new__(KnowledgeBase)
+        kb_instance._retrievers = {}
+        kb_instance._collections = {
+            "basic": {"name": "基础知识库", "description": "产品信息", "count": 0},
+            "professional": {"name": "专业知识库", "description": "业务规则", "count": 0},
+            "faq": {"name": "FAQ知识库", "description": "常见问题", "count": 0},
+        }
+        count = kb_instance.load_from_text(
             text="测试文档内容",
             knowledge_type="faq",
             source_name="test",
         )
-        assert count > 0 or count is not None
+        assert isinstance(count, int) and count >= 0
 
     def test_get_stats(self, mock_knowledge_base):
         """测试统计信息获取"""

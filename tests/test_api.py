@@ -13,10 +13,9 @@ class TestAPIRoutes:
     @pytest.fixture
     def client(self):
         """测试客户端"""
-        with patch('main.app') as mock_app:
-            from api.router import app
-            with TestClient(app) as test_client:
-                yield test_client
+        from api.router import app
+        with TestClient(app) as test_client:
+            yield test_client
 
     def test_health_check(self, client):
         """测试健康检查接口"""
@@ -76,18 +75,18 @@ class TestAPIRoutes:
         assert "total" in data
         assert data["total"] > 0
 
-    def test_knowledge_stats(self, client):
+    @patch('api.router.get_knowledge_base')
+    def test_knowledge_stats(self, mock_kb, client):
         """测试知识库统计接口"""
-        with patch('api.router.get_knowledge_base') as mock_kb:
-            mock_kb.return_value.get_stats.return_value = {
-                "basic": {"document_count": 10, "status": "active"},
-                "professional": {"document_count": 5, "status": "active"},
-                "faq": {"document_count": 20, "status": "active"},
-            }
-            response = client.get("/api/knowledge/stats")
-            assert response.status_code == 200
-            data = response.json()
-            assert "statistics" in data
+        mock_kb.return_value.get_stats.return_value = {
+            "basic": {"document_count": 10, "status": "active"},
+            "professional": {"document_count": 5, "status": "active"},
+            "faq": {"document_count": 20, "status": "active"},
+        }
+        response = client.get("/api/knowledge/stats")
+        assert response.status_code == 200
+        data = response.json()
+        assert "statistics" in data
 
     def test_chat_missing_message(self, client):
         """测试缺少消息参数的情况"""

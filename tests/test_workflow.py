@@ -112,7 +112,7 @@ class TestToolAgent:
 class TestWorkflow:
     """工作流集成测试"""
 
-    def test_build_workflow(self):
+    def test_build_workflow(self, mock_settings):
         """测试工作流构建"""
         from graph.workflow import build_workflow
 
