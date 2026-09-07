@@ -203,6 +203,4 @@ pytest tests/test_workflow.py -v
 
 ---
 
-**开发者**：Agnes (Sapiens AI)  
-**版本**：1.0.0  
-**最后更新**：2026-09-07
+**开发者**：liushuaiqiang  
