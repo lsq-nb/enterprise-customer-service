@@ -22,7 +22,7 @@ from api.schemas import (
 )
 from api.dependencies import get_workflow, get_knowledge_base
 from workflows.customer_flow import CustomerFlow
-from rag.knowledge_base import get_knowledge_base as get_kb_instance
+
 
 logger = logging.getLogger(__name__)
 

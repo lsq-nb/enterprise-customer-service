@@ -7,7 +7,7 @@ import logging
 from fastapi import Depends
 
 from workflows.customer_flow import CustomerFlow
-from rag.knowledge_base import get_knowledge_base
+from rag.knowledge_base import KnowledgeBase
 
 logger = logging.getLogger(__name__)
 
@@ -26,4 +26,4 @@ def get_workflow() -> CustomerFlow:
 
 def get_knowledge_base():
     """获取知识库实例"""
-    return get_knowledge_base()
+    return KnowledgeBase()
