@@ -60,3 +60,6 @@ loguru>=0.7.0
 # 开发依赖
 # ─────────────────────────────────────────────
 -r requirements-dev.txt
+
+# 可选：重排序模型
+sentence-transformers>=3.0.0
