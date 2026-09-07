@@ -62,4 +62,6 @@ loguru>=0.7.0
 -r requirements-dev.txt
 
 # 可选：重排序模型
-sentence-transformers>=3.0.0
+
+# 可选依赖（用于 CrossEncoder 重排序，不安装可跳过）
+# pip install sentence-transformers
