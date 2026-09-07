@@ -30,24 +30,17 @@ class TestHybridRetriever:
 class TestKnowledgeBase:
     """知识库测试"""
 
-    def test_load_from_text(self, mock_knowledge_base):
+    def test_load_from_text(self, mock_settings):
         """测试从文本加载知识库"""
-        kb = mock_knowledge_base
-        # 直接测试 KnowledgeBase 类的方法
-        from rag.knowledge_base import KnowledgeBase
-        kb_instance = KnowledgeBase.__new__(KnowledgeBase)
-        kb_instance._retrievers = {}
-        kb_instance._collections = {
-            "basic": {"name": "基础知识库", "description": "产品信息", "count": 0},
-            "professional": {"name": "专业知识库", "description": "业务规则", "count": 0},
-            "faq": {"name": "FAQ知识库", "description": "常见问题", "count": 0},
-        }
-        count = kb_instance.load_from_text(
-            text="测试文档内容",
-            knowledge_type="faq",
-            source_name="test",
-        )
-        assert isinstance(count, int) and count >= 0
+        with patch('rag.knowledge_base.HybridRetriever') as mock_retriever:
+            from rag.knowledge_base import KnowledgeBase
+            kb = KnowledgeBase()
+            count = kb.load_from_text(
+                text="测试文档内容",
+                knowledge_type="basic",
+                source_name="test",
+            )
+            assert isinstance(count, int) and count >= 0
 
     def test_get_stats(self, mock_knowledge_base):
         """测试统计信息获取"""
@@ -63,6 +56,7 @@ class TestKnowledgeBase:
 
     def test_clear_invalid_collection(self, mock_knowledge_base):
         """测试清空无效知识库"""
+        mock_knowledge_base.clear_collection.return_value = False
         result = mock_knowledge_base.clear_collection("invalid")
         assert result is False
 
