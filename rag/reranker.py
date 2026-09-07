@@ -6,9 +6,18 @@ import logging
 from typing import Any
 
 from langchain_core.documents import Document
-from sentence_transformers import CrossEncoder as SentenceCrossEncoder
 
 from config.settings import settings
+
+logger = logging.getLogger(__name__)
+
+# 尝试导入 CrossEncoder，失败时使用降级方案
+try:
+    from sentence_transformers import CrossEncoder as SentenceCrossEncoder
+    _HAS_CROSS_ENCODER = True
+except ImportError:
+    _HAS_CROSS_ENCODER = False
+    SentenceCrossEncoder = None
 
 logger = logging.getLogger(__name__)
 
