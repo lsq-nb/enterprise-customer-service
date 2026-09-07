@@ -2,7 +2,6 @@
 Prompt 模板模块
 集中管理所有 LLM Prompt，包含 Few-shot 示例与思维链约束
 """
-from config.settings import settings
 
 # ─────────────────────────────────────────────
 # 意图识别路由 Prompt
@@ -36,43 +35,43 @@ INTENT_ROUTER_PROMPT = """\
 
 只返回 JSON，不要有任何解释：
 ```json
-{
+{{
   "intent": "<类别标签>",
   "confidence": <0.0-1.0 之间的浮点数>,
   "reasoning": "<简要说明判断理由>"
-}
+}}
 ```
 
 ## Few-shot 示例
 
 用户："你好，我想问一下你们的手机支持多少瓦快充？"
 ```json
-{"intent": "product_info", "confidence": 0.95, "reasoning": "用户在询问产品快充功能规格"}
+{{ "intent": "product_info", "confidence": 0.95, "reasoning": "用户在询问产品快充功能规格" }}
 ```
 
 用户："我上周下的订单还没收到，能帮我查一下吗？订单号是 ORD20241201001"
 ```json
-{"intent": "order_query", "confidence": 0.98, "reasoning": "用户主动提供了订单号，明确要查询物流状态"}
+{{ "intent": "order_query", "confidence": 0.98, "reasoning": "用户主动提供了订单号，明确要查询物流状态" }}
 ```
 
 用户："你们的产品质量太差了，用了两天就坏了！"
 ```json
-{"intent": "complaint", "confidence": 0.92, "reasoning": "用户表达强烈不满，属于投诉类"}
+{{ "intent": "complaint", "confidence": 0.92, "reasoning": "用户表达强烈不满，属于投诉类" }}
 ```
 
 用户："你好"
 ```json
-{"intent": "chitchat", "confidence": 0.99, "reasoning": "简单的问候语，无业务意图"}
+{{ "intent": "chitchat", "confidence": 0.99, "reasoning": "简单的问候语，无业务意图" }}
 ```
 
 用户："帮我查询订单状态，订单号 ORD20241201001"
 ```json
-{"intent": "tool_use", "confidence": 0.90, "reasoning": "需要调用订单查询工具获取实时数据"}
+{{ "intent": "tool_use", "confidence": 0.90, "reasoning": "需要调用订单查询工具获取实时数据" }}
 ```
 
 用户："你们的售后服务政策是什么？"
 ```json
-{"intent": "after_sales", "confidence": 0.88, "reasoning": "用户在询问售后服务相关政策"}
+{{ "intent": "after_sales", "confidence": 0.88, "reasoning": "用户在询问售后服务相关政策" }}
 ```
 
 ## 当前用户输入
@@ -138,43 +137,43 @@ TOOL_CALL_PROMPT = """\
 
 只返回 JSON，不要有任何解释：
 ```json
-{
+{{
   "need_tool": true/false,
   "tools": [
-    {
+    {{
       "name": "<工具名称>",
-      "arguments": {
+      "arguments": {{
         "<参数名>": "<参数值>"
-      }
-    }
+      }}
+    }}
   ],
   "reasoning": "<调用工具的理由>"
-}
+}}
 ```
 
 ## Few-shot 示例
 
 用户："帮我查一下订单 ORD20241201001 的物流状态"
 ```json
-{
+{{
   "need_tool": true,
   "tools": [
-    {
+    {{
       "name": "query_order",
-      "arguments": {"order_id": "ORD20241201001"}
-    }
+      "arguments": {{"order_id": "ORD20241201001"}}
+    }}
   ],
   "reasoning": "用户需要查询特定订单的物流信息，需调用订单查询工具"
-}
+}}
 ```
 
 用户："你们有什么手机产品？"
 ```json
-{
+{{
   "need_tool": false,
   "tools": [],
   "reasoning": "这是产品咨询，知识库中已有相关信息，无需调用工具"
-}
+}}
 ```
 
 请直接输出 JSON：
@@ -219,13 +218,13 @@ ANSWER_VERIFY_PROMPT = """\
 
 只返回 JSON，不要有任何解释：
 ```json
-{
+{{
   "verified": true/false,
   "score": <0.0-1.0>,
   "issues": ["问题1", "问题2"],
   "suggestions": ["修改建议1", "修改建议2"],
   "final_answer": "<如果有需要修改的内容，在此提供修正后的完整答案>"
-}
+}}
 ```
 """
 
@@ -260,10 +259,10 @@ SUPERVISOR_PROMPT = """\
 
 只返回 JSON：
 ```json
-{
+{{
   "next_agent": "<agent名称>",
   "reasoning": "<决策理由>"
-}
+}}
 ```
 """
 
@@ -287,13 +286,13 @@ SUMMARIZE_PROMPT = """\
 ## 输出格式
 
 ```json
-{
+{{
   "summary": "<对话摘要>",
   "main_topic": "<主要话题>",
   "resolved": true/false,
   "needs_followup": true/false,
   "followup_action": "<如需跟进，描述下一步行动>"
-}
+}}
 ```
 """
 
@@ -334,12 +333,12 @@ KNOWLEDGE_PROCESS_PROMPT = """\
 返回 JSON 数组，每个元素为一个文本块：
 ```json
 [
-  {
+  {{
     "text": "<文本块内容>",
     "keywords": ["关键词1", "关键词2", "关键词3"],
     "source": "<来源文档名>",
     "section": "<所属章节>"
-  }
+  }}
 ]
 ```
 """
@@ -367,10 +366,10 @@ CONTEXT_AUGMENT_PROMPT = """\
 ## 输出格式
 
 ```json
-{
+{{
   "clarified_input": "<补全后的用户输入>",
   "intent": "<判断的意图>",
   "missing_info": ["需要补充的信息1", "需要补充的信息2"]
-}
+}}
 ```
 """
